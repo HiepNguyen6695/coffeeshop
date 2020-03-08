@@ -9,22 +9,23 @@ AUTH0_DOMAIN = 'udacitycoffeeshop.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'drinks'
 
-## AuthError Exception
+
 '''
     AuthError Exception
     A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
-
 '''
     Get auth info on header.
 '''
+
 
 def get_token_auth_header():
     if 'Authorization' not in request.headers:
@@ -41,7 +42,6 @@ def get_token_auth_header():
             abort(401)
         elif result_token and lowercase_token == "bearer" and result_token_1:
             return result_token_1
-    
     raise AuthError({
         'success': False,
         'message': 'JWT Not Found',
@@ -52,6 +52,8 @@ def get_token_auth_header():
 '''
     Check to see permission is granted or not
 '''
+
+
 def check_permissions(permission, payload):
     if "permissions" in payload:
         if permission in payload['permissions']:
@@ -62,19 +64,12 @@ def check_permissions(permission, payload):
         'error': 401
     }, 401)
 
-'''
-@TODO implement verify_decode_jwt(token) method
-    @INPUTS
-        token: a json web token (string)
 
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
-    return the decoded payload
-
-    !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
+    Verify a decoded jwt
+'''
+
+
 def verify_decode_jwt(token):
     # GET THE PUBLIC KEY FROM AUTH0
     jsonurl = urlopen(f'http://{AUTH0_DOMAIN}/.well-known/jwks.json')
@@ -126,7 +121,7 @@ def verify_decode_jwt(token):
         except jwt.JWTClaimsError:
             raise AuthError({
                 'success': False,
-                'message': 'Incorrect claims. Please, check the audience and issuer',
+                'message': 'Incorrect claims.',
                 'error': 401,
             }, 401)
         except Exception:
@@ -143,15 +138,10 @@ def verify_decode_jwt(token):
 
 
 '''
-@TODO implement @requires_auth(permission) decorator method
-    @INPUTS
-        permission: string permission (i.e. 'post:drink')
-
-    it should use the get_token_auth_header method to get the token
-    it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
+    Require authourization
 '''
+
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
